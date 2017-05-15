@@ -56,17 +56,17 @@ Select Library :<br />
 Enter Number: 1<br />
 Library Selected is LIBRARY1 and device is /dev/smc0<br />
  <br />                                                      
-| Slot Number | TSM Entry 	| Physical Entry 	| Result 	|<br />
+|&emsp;&emsp;Slot Number&emsp;&emsp;|&emsp;&emsp;TSM Entry&emsp;&emsp;|&emsp;&emsp;Physical Entry&emsp;&emsp;|&emsp;&emsp;Result&emsp;&emsp;|<br />
 <br />
-|	 1027 	    | VOL1LT4 	  | VOL1LT4 		    |  OK  		|<br />
-|	 1028 	    | VOL2LT4 	  | VOL2LT4 		    |  OK  		|<br />
-|	 1029 	    | VOL3LT4 	  | VOL3LT4 		    |  OK  		|<br />
-|	 1030 	    | VOL4LT4 	  | VOL4LT4 		    |  OK  		|<br />
-|	 1031 	    | VOL5LT4 	  | EMPTY   		    |  KO  		|<br />
-|	 1032 	    | VOL6LT4 	  | EMPTY    		    |  KO  		|<br />
-|	 1033 	    | VOL7LT4 	  | VOL7LT4 		    |  OK  		|<br />
-|	 1034 	    | VOL8LT4 	  | EMPTY   		    |  MOUNTED  	|<br />
-|	 1035 	    | VOL9LT4 	  | VOL9LT4 		    |  OK  		|<br />
+|&emsp;&emsp;1027&emsp;&emsp;|&emsp;&emsp;VOL1LT4&emsp;&emsp;|&emsp;&emsp;VOL1LT4&emsp;&emsp;|&emsp;&emsp;OK&emsp;&emsp;&emsp;&emsp;|<br />
+|&emsp;&emsp;1028&emsp;&emsp;|&emsp;&emsp;VOL2LT4&emsp;&emsp;|&emsp;&emsp;VOL2LT4&emsp;&emsp;|&emsp;&emsp;OK&emsp;&emsp;&emsp;&emsp;|<br />
+|&emsp;&emsp;1029&emsp;&emsp;|&emsp;&emsp;VOL3LT4&emsp;&emsp;|&emsp;&emsp;VOL3LT4&emsp;&emsp;|&emsp;&emsp;OK&emsp;&emsp;&emsp;&emsp;|<br />
+|&emsp;&emsp;1030&emsp;&emsp;|&emsp;&emsp;VOL4LT4&emsp;&emsp;|&emsp;&emsp;VOL4LT4&emsp;&emsp;|&emsp;&emsp;OK&emsp;&emsp;&emsp;&emsp;|<br />
+|&emsp;&emsp;1031&emsp;&emsp;|&emsp;&emsp;VOL5LT4&emsp;&emsp;|&emsp;&emsp; EMPTY  &emsp;&emsp;|&emsp;&emsp;KO&emsp;&emsp;&emsp;&emsp;|<br />
+|&emsp;&emsp;1032&emsp;&emsp;|&emsp;&emsp;VOL6LT4&emsp;&emsp;|&emsp;&emsp; EMPTY  &emsp;&emsp;|&emsp;&emsp;KO&emsp;&emsp;&emsp;&emsp;|<br />
+|&emsp;&emsp;1033&emsp;&emsp;|&emsp;&emsp;VOL7LT4&emsp;&emsp;|&emsp;&emsp;VOL7LT4&emsp;&emsp;|&emsp;&emsp;OK&emsp;&emsp;&emsp;&emsp;|<br />
+|&emsp;&emsp;1034&emsp;&emsp;|&emsp;&emsp;VOL8LT4&emsp;&emsp;|&emsp;&emsp; EMPTY  &emsp;&emsp;|&emsp;&emsp;MOUNTED&emsp;&emsp;|<br />
+|&emsp;&emsp;1035&emsp;&emsp;|&emsp;&emsp;VOL9LT4&emsp;&emsp;|&emsp;&emsp;VOL9LT4&emsp;&emsp;|&emsp;&emsp;OK&emsp;&emsp;&emsp;&emsp;|<br />
 
 
 # Required Modules
