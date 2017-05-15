@@ -14,76 +14,76 @@ The TSM information in the tsmlist.conf file must exist in dsm.sys of the TSM cl
 
 # TOML Configuration File 
 
-Example:
-[TSM_SERVERS.TSM01]
-	tsmName = "TSM01"
-	tsmUser = "tsmUser"
-	tsmPass = "tsmPass"
-	tsmIp   = "192.168.1.101"
-	username = "hostUser"
-	password = "hostPass"
-
-1 - Name of the TSM server ( this must exist in dsm.sys file with all the STANZA information.)
-2 - Username to connect to the TSM server.
-3 - Password to connect to the TSM server.
-4 - Hostname of the server that TSM is hosted.
-5 - Username to login to the server that TSM is hosted.
-6 - Password to login to the server that TSM is hosted.
-
+Example:<br />
+[TSM_SERVERS.TSM01]<br />
+	tsmName = "TSM01"<br />
+	tsmUser = "tsmUser"<br />
+	tsmPass = "tsmPass"<br />
+	tsmIp   = "192.168.1.101"<br />
+	username = "hostUser"<br />
+	password = "hostPass"<br />
+<br />
+1 - Name of the TSM server ( this must exist in dsm.sys file with all the STANZA information.)<br />
+2 - Username to connect to the TSM server.<br />
+3 - Password to connect to the TSM server.<br />
+4 - Hostname of the server that TSM is hosted.<br />
+5 - Username to login to the server that TSM is hosted.<br />
+6 - Password to login to the server that TSM is hosted.<br />
+<br />
 
 # Arguments
 
-usage: compareSlots.py [-h] -t TSM [-o {ALL,KO}] [-v VOLUME] [-c CONFIG]
+usage: compareSlots.py [-h] -t TSM [-o {ALL,KO}] [-v VOLUME] [-c CONFIG]<br />
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -t TSM, --tsm TSM     TSM server name.
-  -o {ALL,KO}, --outmode {ALL,KO}
-                        Output mode. ALL to see all the comparison and KO to see only errors
-  -v VOLUME, --volume VOLUME
-                        Volume name. If you wish to compare slots for only one volume
-  -c CONFIG, --config CONFIG
-                        TOML configuration file.
+optional arguments:<br />
+  -h, --help            show this help message and exit<br />
+  -t TSM, --tsm TSM     TSM server name.<br />
+  -o {ALL,KO}, --outmode {ALL,KO}<br />
+                        Output mode. ALL to see all the comparison and KO to see only errors<br />
+  -v VOLUME, --volume VOLUME<br />
+                        Volume name. If you wish to compare slots for only one volume<br />
+  -c CONFIG, --config CONFIG<br />
+                        TOML configuration file.<br />
 
 
 # Example Output
 
-Select Library :
-1 : LIBRARY1
-2 : LIBRARY2
-3 : LIBRARY3
-4 : Exit
-Enter Number: 1
-Library Selected is LIBRARY1 and device is /dev/smc0
-                                                       
-| Slot Number | TSM Entry 	| Physical Entry 	| Result 	|
-
-|	 1027 	    | VOL1LT4 	  | VOL1LT4 		    |  OK  		|
-|	 1028 	    | VOL2LT4 	  | VOL2LT4 		    |  OK  		|
-|	 1029 	    | VOL3LT4 	  | VOL3LT4 		    |  OK  		|
-|	 1030 	    | VOL4LT4 	  | VOL4LT4 		    |  OK  		|
-|	 1031 	    | VOL5LT4 	  | EMPTY   		    |  KO  		|
-|	 1032 	    | VOL6LT4 	  | EMPTY    		    |  KO  		|
-|	 1033 	    | VOL7LT4 	  | VOL7LT4 		    |  OK  		|
-|	 1034 	    | VOL8LT4 	  | EMPTY   		    |  MOUNTED  |
-|	 1035 	    | VOL9LT4 	  | VOL9LT4 		    |  OK  		|
+Select Library :<br />
+1 : LIBRARY1<br />
+2 : LIBRARY2<br />
+3 : LIBRARY3<br />
+4 : Exit<br />
+Enter Number: 1<br />
+Library Selected is LIBRARY1 and device is /dev/smc0<br />
+ <br />                                                      
+| Slot Number | TSM Entry 	| Physical Entry 	| Result 	|<br />
+<br />
+|	 1027 	    | VOL1LT4 	  | VOL1LT4 		    |  OK  		|<br />
+|	 1028 	    | VOL2LT4 	  | VOL2LT4 		    |  OK  		|<br />
+|	 1029 	    | VOL3LT4 	  | VOL3LT4 		    |  OK  		|<br />
+|	 1030 	    | VOL4LT4 	  | VOL4LT4 		    |  OK  		|<br />
+|	 1031 	    | VOL5LT4 	  | EMPTY   		    |  KO  		|<br />
+|	 1032 	    | VOL6LT4 	  | EMPTY    		    |  KO  		|<br />
+|	 1033 	    | VOL7LT4 	  | VOL7LT4 		    |  OK  		|<br />
+|	 1034 	    | VOL8LT4 	  | EMPTY   		    |  MOUNTED  	|<br />
+|	 1035 	    | VOL9LT4 	  | VOL9LT4 		    |  OK  		|<br />
 
 
 # Required Modules
 
-sys
-subprocess
-toml
-argparse
+sys<br />
+subprocess<br />
+toml<br />
+argparse<br />
 
-Install toml module from pip with command: pip install toml
-or
-git clone https://github.com/toml-lang/toml.git
-and, python setup.py install
+Install toml module from pip with command: pip install toml<br />
+or<br />
+git clone https://github.com/toml-lang/toml.git<br />
+and, python setup.py install<br />
 
 # Licence
 
- GNU GENERAL PUBLIC LICENSE
- Version 3, 29 June 2007
+ GNU GENERAL PUBLIC LICENSE<br />
+ Version 3, 29 June 2007<br />
 
 
