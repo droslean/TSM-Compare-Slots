@@ -12,39 +12,34 @@ TSM client 5.x, 6.x, 7.x or 8.x is required because the script is using dsmadmc 
 connect to TSM server. 
 The TSM information in the tsmlist.conf file must exist in dsm.sys of the TSM client.
 
-# TOML Configuration File 
-
-Example:<br />
-[TSM_SERVERS.TSM01]<br />
-	tsmName = "TSM01"<br />
-	tsmUser = "tsmUser"<br />
-	tsmPass = "tsmPass"<br />
-	tsmIp   = "192.168.1.101"<br />
-	username = "hostUser"<br />
-	password = "hostPass"<br />
-<br />
-1 - Name of the TSM server ( this must exist in dsm.sys file with all the STANZA information.)<br />
-2 - Username to connect to the TSM server.<br />
-3 - Password to connect to the TSM server.<br />
-4 - Hostname of the server that TSM is hosted.<br />
-5 - Username to login to the server that TSM is hosted.<br />
-6 - Password to login to the server that TSM is hosted.<br />
-<br />
+# Configuration Example File
+```toml
+[TSM_SERVERS.TSM01]
+# Name of the TSM server ( this must exist in dsm.sys file with all the STANZA information.)
+tsmName = "TSM01"
+# Username to connect to the TSM server.
+tsmUser = "tsmUser"
+# Password to connect to the TSM server.
+tsmPass = "tsmPass"
+# IP of the server that TSM is hosted.
+tsmIp   = "192.168.1.101"
+# Username to login to the server that TSM is hosted.
+username = "hostUser"
+# Password to login to the server that TSM is hosted.
+password = "hostPass"
+```
 
 # Arguments
+```
+usage: compareSlots.py [-h] -t TSM [-o {ALL,KO}] [-v VOLUME] [-c CONFIG]
 
-usage: compareSlots.py [-h] -t TSM [-o {ALL,KO}] [-v VOLUME] [-c CONFIG]<br />
-
-optional arguments:<br />
-  -h, --help            show this help message and exit<br />
-  -t TSM, --tsm TSM     TSM server name.<br />
-  -o {ALL,KO}, --outmode {ALL,KO}<br />
-                        Output mode. ALL to see all the comparison and KO to see only errors<br />
-  -v VOLUME, --volume VOLUME<br />
-                        Volume name. If you wish to compare slots for only one volume<br />
-  -c CONFIG, --config CONFIG<br />
-                        TOML configuration file.<br />
-
+optional arguments:
+  -h, --help                       show this help message and exit
+  -t TSM, --tsm TSM                TSM server name.
+  -o {ALL,KO}, --outmode {ALL,KO}  Output mode. ALL to see all the comparison and KO to see only errors
+  -v VOLUME, --volume VOLUME       Volume name. If you wish to compare slots for only one volume
+  -c CONFIG, --config CONFIG       TOML configuration file.
+```
 
 # Example Output
 
