@@ -1,0 +1,37 @@
+[tsmList]
+name = "Tsm Lists"
+description = """
+Tsm list with required information.
+1 - Name of the TSM server ( this must exist in dsm.sys file with all the STANZA information.)
+2 - Username to connect to the TSM server.
+3 - Password to connect to the TSM server.
+4 - Hostname of the server that TSM is hosted.
+5 - Username to login to the server that TSM is hosted.
+6 - Password to login to the server that TSM is hosted.
+"""
+
+[TSM_SERVERS]
+
+[TSM_SERVERS.TSM01]
+	tsmName = "TSM01"
+	tsmUser = "tsmUser"
+	tsmPass = "tsmPass"
+	tsmIp   = "192.168.1.101"
+	username = "hostUser"
+	password = "hostPass"
+
+[TSM_SERVERS.TSM02]
+	tsmName = "TSM02"
+	tsmUser = "tsmUser"
+	tsmPass = "tsmPass"
+	tsmIp   = "192.168.1.102"
+	username = "hostUser"
+	password = "hostPass"
+
+[TSM_SERVERS.TSM03]
+	tsmName = "TSM03"
+	tsmUser = "tsmUser"
+	tsmPass = "tsmPass"
+	tsmIp   = "192.168.1.103"
+	username = "hostUser"
+	password = "hostPass"
