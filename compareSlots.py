@@ -5,7 +5,7 @@ import argparse
 
 
 # Select library Menu
-def selectLibraryMenu(libraries):
+def select_library_menu(libraries):
     while True:
         counter = 1
         for library in libraries:
@@ -14,49 +14,49 @@ def selectLibraryMenu(libraries):
                 counter += 1
         print("{}: Exit ".format(len(libraries) + 1))
         try:
-            userInput = int(input("Enter number: "))
-            if (userInput > len(libraries) or userInput == 0):
-                if (userInput == len(libraries) + 1):
+            user_input = int(input("Enter number: "))
+            if (user_input > len(libraries) or user_input == 0):
+                if (user_input == len(libraries) + 1):
                     sys.exit()
                 else:
                     print("Try again...")
             else:
-                return libraries[userInput - 1]
+                return libraries[user_input - 1]
                 break
         except ValueError:
             print("You didn't enter a number")
 
 
 # Get Available libraries from given TSM server
-def getLibraries(tsmName):
+def get_libraries(tsm_name):
     try:
-        return subprocess.check_output(tsmCmd +
+        return subprocess.check_output(tsm_command +
                                        " -dataonly=yes " +
                                        "'select LIBRARY_NAME " +
                                        "from libraries' " +
                                        "| sed '/^$/d'",
                                        shell=True).decode("utf-8")
 
-    except subprocess.CalledProcessError as tsmexec:
+    except subprocess.CalledProcessError as tsm_exec:
         print("TSM get libraries command failed with return code:",
-              tsmexec.returncode)
-        sys.exit(tsmexec.returncode)
+              tsm_exec.returncode)
+        sys.exit(tsm_exec.returncode)
 
 
 # Get Library's Inventory
-def getLibraryInventory(ip, username, password, device):
+def get_library_inventory(ip, username, password, device):
     try:
-        sshOutput = subprocess.check_output(["sshpass -p %s ssh -q %s@%s "
-                                             "tapeutil -f %s inventory" %
-                                             (password, username, ip, device)],
-                                            shell=True,
-                                            stderr=subprocess.PIPE)
+        ssh_output = subprocess.check_output(["proxychains4 -q sshpass -p %s ssh -q %s@%s "
+                                              "tapeutil -f %s inventory" %
+                                              (password, username, ip, device)],
+                                             shell=True,
+                                             stderr=subprocess.PIPE)
 
-        slotMap = dict()
+        slot_dict = dict()
         slot = None
         volume = None
 
-        for line in sshOutput.decode("utf-8").split("\n"):
+        for line in ssh_output.decode("utf-8").split("\n"):
             if "Slot Address" in line:
                 slot = line.strip().split()[-1]
             if "Volume Tag" in line:
@@ -66,45 +66,45 @@ def getLibraryInventory(ip, username, password, device):
 
             # Populate dictionary
             if slot:
-                slotMap[slot] = volume
+                slot_dict[slot] = volume
 
-        return slotMap
+        return slot_dict
 
-    except subprocess.CalledProcessError as sshexec:
-        print("SSH command failed with return code:", sshexec.returncode)
-        sys.exit(sshexec.returncode)
+    except subprocess.CalledProcessError as ssh_exec:
+        print("SSH command failed with return code:", ssh_exec.returncode)
+        sys.exit(ssh_exec.returncode)
 
 
 # Get list of libvolumes with element number.
-def getLibVolumes(library):
+def get_libvolumes(library):
     try:
-        tsmOutput = subprocess.check_output(tsmCmd +
-                                            " -dataonly=yes -tab " +
-                                            "select VOLUME_NAME," +
-                                            "HOME_ELEMENT " +
-                                            "from libvolumes " +
-                                            "where library_name=\\'" +
-                                            library + "\\' ORDER BY 2",
-                                            shell=True)
+        tsm_output = subprocess.check_output(tsm_command +
+                                             " -dataonly=yes -tab " +
+                                             "select VOLUME_NAME," +
+                                             "HOME_ELEMENT " +
+                                             "from libvolumes " +
+                                             "where library_name=\\'" +
+                                             library + "\\' ORDER BY 2",
+                                             shell=True)
 
-        libvolsMap = dict()
-        for volumeElement in tsmOutput.decode("utf-8").split('\n'):
-            if volumeElement:
-                libvolsMap[volumeElement.split(
-                    '\t')[1]] = volumeElement.split('\t')[0]
+        libvolumes_dict = dict()
+        for volume_element in tsm_output.decode("utf-8").split('\n'):
+            if volume_element:
+                libvolumes_dict[volume_element.split(
+                    '\t')[1]] = volume_element.split('\t')[0]
 
-        return libvolsMap
-    except subprocess.CalledProcessError as tsmexec:
+        return libvolumes_dict
+    except subprocess.CalledProcessError as tsm_exec:
         print("TSM get libvolumes command failed with return code:",
-              tsmexec.returncode)
-        sys.exit(tsmexec.returncode)
+              tsm_exec.returncode)
+        sys.exit(tsm_exec.returncode)
 
 
 # Get device of the library.
 # This is needed to pass it to -f of tapeutil command.
-def getDevice(library):
+def get_device(library):
     try:
-        return subprocess.check_output(tsmCmd +
+        return subprocess.check_output(tsm_command +
                                        " -dataonly=yes " +
                                        "select device from paths " +
                                        "where DESTINATION_TYPE=" +
@@ -112,18 +112,18 @@ def getDevice(library):
                                        "and DESTINATION_NAME=\\'" +
                                        str(library) + "\\'",
                                        shell=True).decode("utf-8")
-    except subprocess.CalledProcessError as tsmexec:
+    except subprocess.CalledProcessError as tsm_exec:
         print("TSM get device command failed with return code:",
-              tsmexec.returncode)
-        sys.exit(tsmexec.returncode)
+              tsm_exec.returncode)
+        sys.exit(tsm_exec.returncode)
 
 
 # List of volumes that are currently mounted in TSM server.and
 # This is important because the slot in the physical library will be empty,
 # because the volume it will be in a drive's slot.
-def getMountedVolumes(library):
+def get_mounted_volumes(library):
     try:
-        return subprocess.check_output(tsmCmd +
+        return subprocess.check_output(tsm_command +
                                        " -dataonly=yes " +
                                        "select volume_name from drives " +
                                        "where DRIVE_STATE=\\'LOADED\\' " +
@@ -132,97 +132,98 @@ def getMountedVolumes(library):
                                        shell=True,
                                        ).decode("utf-8")
 
-    except subprocess.CalledProcessError as tsmexec:
-        if tsmexec.returncode == 11:
+    except subprocess.CalledProcessError as tsm_exec:
+        if tsm_exec.returncode == 11:
             print("No mounted volumes found in the library.Continue..\n")
         else:
             print("TSM get mounted volumes command failed with return code:",
-                  tsmexec.returncode)
-            sys.exit(tsmexec.returncode)
+                  tsm_exec.returncode)
+            sys.exit(tsm_exec.returncode)
 
 
 # Get dictonary from Toml file.
-def getInfoFromToml(tomlFile):
+def get_info_from_toml(tomlFile):
     with open(tomlFile) as conffile:
         return toml.loads(conffile.read())
 
 
 # Compares the slots of TSM and Physical libraries, and print the results.
-def compareAllAndPrint(libraryInventoryMap, libVolumesMap, mountedVols):
+def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
+                          mounted_volumes):
 
     print("\n|\tSLOT\t|\tTSM ENTRY\t|\tPhysical Entry\t|\tResult\t|\n")
 
-    maximum = max(libraryInventoryMap.keys(), key=int)
-    mininum = min(libraryInventoryMap.keys(), key=int)
+    maximum = max(library_inventory_dict.keys(), key=int)
+    mininum = min(library_inventory_dict.keys(), key=int)
 
     for x in range(int(mininum), int(maximum) + 1):
 
-        if str(x) not in libraryInventoryMap:
-            libInvVol = "Empty..."
+        if str(x) not in library_inventory_dict:
+            libinv_vol = "Empty..."
         else:
-            libInvVol = libraryInventoryMap[str(x)]
+            libinv_vol = library_inventory_dict[str(x)]
 
-        if str(x) not in libVolumesMap:
-            tsmLibVol = "Empty..."
+        if str(x) not in tsm_libvolumes_dict:
+            tsmlib_vol = "Empty..."
         else:
-            tsmLibVol = libVolumesMap[str(x)]
+            tsmlib_vol = tsm_libvolumes_dict[str(x)]
 
-        if libInvVol == tsmLibVol:
+        if libinv_vol == tsmlib_vol:
             result = "\033[92mOK\033[97m"
             if args.outmode == "ALL":
                 print("|\t{}\t|\t{}\t|\t{}\t|\t{}\t|"
-                      .format(x, tsmLibVol, libInvVol, result))
+                      .format(x, tsmlib_vol, libinv_vol, result))
         else:
-            if mountedVols and tsmLibVol in mountedVols:
+            if mounted_volumes and tsmlib_vol in mounted_volumes:
                 result = "\033[44mMOUNTED\033[49m"
                 if args.outmode == "ALL":
                     print("|\t{}\t|\t{}\t|\t{}\t|\t{}\t|"
-                          .format(x, tsmLibVol, libInvVol, result))
+                          .format(x, tsmlib_vol, libinv_vol, result))
             else:
                 result = "\033[41mKO\033[49m"
                 print("|\t{}\t|\t{}\t|\t{}\t|\t{}\t|"
-                      .format(x, tsmLibVol, libInvVol, result))
+                      .format(x, tsmlib_vol, libinv_vol, result))
 
 
-def compareTapeAndPrint(libraryInventoryMap, libVolumesMap,
-                        mountedVols, volumeName):
-    print("Compare Slots for", volumeName)
-    isInTSM = False
-    isInPhysical = False
+def compare_tape_and_print(library_inventory_dict, tsm_libvolumes_dict,
+                           mounted_volumes, volume_name):
+    print("Compare Slots for", volume_name)
+    in_tsm = False
+    in_physical = False
     try:
-        tsmSlot = list(libVolumesMap.keys())[list(libVolumesMap.values())
-                                             .index(volumeName)]
+        tsm_slot = list(tsm_libvolumes_dict.keys())[list(
+            tsm_libvolumes_dict.values()).index(volume_name)]
 
-        print("TSM entry: ", tsmSlot)
-        isInTSM = True
+        print("TSM entry: ", tsm_slot)
+        in_tsm = True
     except ValueError:
         print("Volume not found in TSM library")
 
     try:
-        physicalSlot = list(libraryInventoryMap.keys())[list(
-            libraryInventoryMap.values())
-            .index(volumeName)]
+        physical_slot = list(library_inventory_dict.keys())[list(
+            library_inventory_dict.values())
+            .index(volume_name)]
 
-        print("Physical Library entry: ", physicalSlot)
-        isInPhysical = True
+        print("Physical Library entry: ", physical_slot)
+        in_physical = True
     except ValueError:
         print("Volume not found in Physical library")
 
-    if not isInTSM:
-        tsmSlot = "Not found!"
+    if not in_tsm:
+        tsm_slot = "Not found!"
 
-    if not isInPhysical:
-        physicalSlot = "Not found!"
+    if not in_physical:
+        physical_slot = "Not found!"
 
-    if not isInTSM and not isInPhysical:
+    if not in_tsm and not in_physical:
         print("Volume {} couldn't be found in TSM and Physical Library."
-              .format(volumeName))
+              .format(volume_name))
         sys.exit()
 
-    if tsmSlot == physicalSlot:
+    if tsm_slot == physical_slot:
         result = "\033[92mOK\033[97m"
     else:
-        if mountedVols and volumeName in mountedVols:
+        if mounted_volumes and volume_name in mounted_volumes:
             result = "\033[44mMOUNTED\033[49m"
         else:
             result = "\033[41mKO\033[49m"
@@ -250,61 +251,62 @@ if __name__ == '__main__':
                         help="TOML configuration file.")
 
     args = parser.parse_args()
-    tsmName = args.tsm
+    tsm_name = args.tsm
     try:
-        configInfo = getInfoFromToml(args.config)
+        config_info = get_info_from_toml(args.config)
     except FileNotFoundError as error:
         print("File not found.\n", error)
         sys.exit()
 
     # Check if TSM exists in the configuration file.
-    if tsmName not in configInfo['TSM_SERVERS']:
-        print("TSM {} not found in the configuration file.".format(tsmName))
+    if tsm_name not in config_info['TSM_SERVERS']:
+        print("TSM {} not found in the configuration file.".format(tsm_name))
         sys.exit()
 
     # Set all information needed to connect to TSM server and the host server.
-    tsmDetails = configInfo['TSM_SERVERS'][tsmName]
+    tsmDetails = config_info['TSM_SERVERS'][tsm_name]
     tsmUsername = tsmDetails['tsmUser']
     tsmPassword = tsmDetails['tsmPass']
     tsmIp = tsmDetails['tsmIp']
     username = tsmDetails['username']
     password = tsmDetails['password']
 
-    global tsmCmd
-    tsmCmd = "dsmadmc -se={} -id={} -pa={}" \
-        .format(tsmName, tsmUsername, tsmPassword)
-    libraries = getLibraries(tsmName)
+    global tsm_command
+    tsm_command = "proxychains4 -q dsmadmc -se={} -id={} -pa={}" \
+        .format(tsm_name, tsmUsername, tsmPassword)
+    libraries = get_libraries(tsm_name)
 
     if "ANS1017E" in libraries:
         print("Session rejected: TCP/IP connection failure.")
         sys.exit()
     # Get library from user's selection menu.
-    selectedLibrary = selectLibraryMenu(libraries.split())
-    print("Library Selected is", selectedLibrary, end="")
+    selected_library = select_library_menu(libraries.split())
+    print("Library Selected is", selected_library, end="")
 
     # Get library's device from TSM server.
-    device = getDevice(selectedLibrary).replace("\n", "")
+    device = get_device(selected_library).replace("\n", "")
     print(" and device is", device)
 
     # Create a dictonary with which volumes are in which slots,
     # in Physical library
-    libraryInventoryMap = getLibraryInventory(
+    library_inventory_dict = get_library_inventory(
         tsmIp, username, password, device)
 
     # Get libvolumes and element information from TSM server library.
-    libVolumesMap = getLibVolumes(selectedLibrary)
+    tsm_libvolumes_dict = get_libvolumes(selected_library)
 
     # Get volumes that are currently mounted in TSM server.
     # This is to ignore error, because the slot in the physical library
     # will be empty, since the volume is mounted on a disk slot.
-    mountedVols = getMountedVolumes(selectedLibrary)
+    mounted_volumes = get_mounted_volumes(selected_library)
 
     if args.volume:
-        compareTapeAndPrint(libraryInventoryMap,
-                            libVolumesMap, mountedVols, args.volume)
+        compare_tape_and_print(library_inventory_dict, tsm_libvolumes_dict,
+                               mounted_volumes, args.volume)
     else:
         # Finally compare everything and print output.
-        compareAllAndPrint(libraryInventoryMap, libVolumesMap, mountedVols)
+        compare_all_and_print(library_inventory_dict,
+                              tsm_libvolumes_dict, mounted_volumes)
 
     # Clear colors.
     print("\033[0m")
