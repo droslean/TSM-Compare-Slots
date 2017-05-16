@@ -1,6 +1,6 @@
 # Compare Slot Script
 
-The purpose of this bash script is to compare the slots of a TSM server 
+The purpose of this python program is to compare the slots of a TSM server 
 with the slots of the Physical library.
 
 TSM libvolumes generated with TSM commands and the Physical Library Inventory 
