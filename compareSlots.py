@@ -2,6 +2,7 @@ import sys
 import subprocess
 import toml
 import argparse
+from tabulate import tabulate
 
 
 # Select library Menu
@@ -30,12 +31,18 @@ def select_library_menu(libraries):
 # Get Available libraries from given TSM server
 def get_libraries(tsm_name):
     try:
-        return subprocess.check_output(tsm_command +
-                                       " -dataonly=yes " +
-                                       "'select LIBRARY_NAME " +
-                                       "from libraries' " +
-                                       "| sed '/^$/d'",
-                                       shell=True).decode("utf-8")
+        libraries = subprocess.check_output(tsm_command +
+                                            " -dataonly=yes " +
+                                            "'select LIBRARY_NAME " +
+                                            "from libraries' " +
+                                            "| sed '/^$/d'",
+                                            shell=True).decode("utf-8")
+
+        if "ANS1017E" in libraries:
+            print("Session rejected: TCP/IP connection failure.")
+            sys.exit()
+
+        return libraries
 
     except subprocess.CalledProcessError as tsm_exec:
         print("TSM get libraries command failed with return code:",
@@ -48,7 +55,8 @@ def get_library_inventory(ip, username, password, device):
     try:
         ssh_output = subprocess.check_output(["proxychains4 -q sshpass -p %s ssh -q %s@%s "
                                               "tapeutil -f %s inventory" %
-                                              (password, username, ip, device)],
+                                              (password, username,
+                                               ip, device)],
                                              shell=True,
                                              stderr=subprocess.PIPE)
 
@@ -111,7 +119,9 @@ def get_device(library):
                                        "\\'LIBRARY\\' " +
                                        "and DESTINATION_NAME=\\'" +
                                        str(library) + "\\'",
-                                       shell=True).decode("utf-8")
+                                       shell=True).decode(
+            "utf-8").replace("\n", "")
+
     except subprocess.CalledProcessError as tsm_exec:
         print("TSM get device command failed with return code:",
               tsm_exec.returncode)
@@ -151,7 +161,9 @@ def get_info_from_toml(tomlFile):
 def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
                           mounted_volumes):
 
-    print("\n|\tSLOT\t|\tTSM ENTRY\t|\tPhysical Entry\t|\tResult\t|\n")
+    #title = "\n|\tSLOT\t|\tTSM ENTRY\t|\tPhysical Entry\t|\tResult\t|"
+    title = ["SLOT", "TSM ENTRY", "Physical Entry", "Result"]
+    list_to_print = list()
 
     maximum = max(library_inventory_dict.keys(), key=int)
     mininum = min(library_inventory_dict.keys(), key=int)
@@ -171,18 +183,18 @@ def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
         if libinv_vol == tsmlib_vol:
             result = "\033[92mOK\033[97m"
             if args.outmode == "ALL":
-                print("|\t{}\t|\t{}\t|\t{}\t|\t{}\t|"
-                      .format(x, tsmlib_vol, libinv_vol, result))
+                list_to_print.append([x, tsmlib_vol, libinv_vol, result])
+
         else:
             if mounted_volumes and tsmlib_vol in mounted_volumes:
                 result = "\033[44mMOUNTED\033[49m"
                 if args.outmode == "ALL":
-                    print("|\t{}\t|\t{}\t|\t{}\t|\t{}\t|"
-                          .format(x, tsmlib_vol, libinv_vol, result))
+                    list_to_print.append([x, tsmlib_vol, libinv_vol, result])
             else:
                 result = "\033[41mKO\033[49m"
-                print("|\t{}\t|\t{}\t|\t{}\t|\t{}\t|"
-                      .format(x, tsmlib_vol, libinv_vol, result))
+                list_to_print.append([x, tsmlib_vol, libinv_vol, result])
+
+    print(tabulate(list_to_print, title, tablefmt="orgtbl"))
 
 
 def compare_tape_and_print(library_inventory_dict, tsm_libvolumes_dict,
@@ -230,6 +242,28 @@ def compare_tape_and_print(library_inventory_dict, tsm_libvolumes_dict,
 
     print("Result:", result)
 
+
+def parse_toml_conf(config_info, tsm_name):
+    try:
+        config_info = get_info_from_toml(args.config)
+    except FileNotFoundError as error:
+        print("File not found.\n", error)
+        sys.exit()
+
+    # Check if TSM exists in the configuration file.
+    if tsm_name not in config_info['TSM_SERVERS']:
+        print("TSM {} not found in the configuration file.".format(tsm_name))
+        sys.exit()
+
+    tsmDetails = config_info['TSM_SERVERS'][tsm_name]
+    # Return all information needed to connect
+    # to TSM server and the host server.
+    return tsmDetails['tsmUser'], \
+        tsmDetails['tsmPass'], \
+        tsmDetails['tsmIp'], \
+        tsmDetails['username'], \
+        tsmDetails['password']
+
     # Main Part
 if __name__ == '__main__':
     # Set white color
@@ -251,40 +285,22 @@ if __name__ == '__main__':
                         help="TOML configuration file.")
 
     args = parser.parse_args()
-    tsm_name = args.tsm
-    try:
-        config_info = get_info_from_toml(args.config)
-    except FileNotFoundError as error:
-        print("File not found.\n", error)
-        sys.exit()
 
-    # Check if TSM exists in the configuration file.
-    if tsm_name not in config_info['TSM_SERVERS']:
-        print("TSM {} not found in the configuration file.".format(tsm_name))
-        sys.exit()
-
-    # Set all information needed to connect to TSM server and the host server.
-    tsmDetails = config_info['TSM_SERVERS'][tsm_name]
-    tsmUsername = tsmDetails['tsmUser']
-    tsmPassword = tsmDetails['tsmPass']
-    tsmIp = tsmDetails['tsmIp']
-    username = tsmDetails['username']
-    password = tsmDetails['password']
+    # Define important information from the configuration file
+    tsmUsername, tsmPassword, tsmIp,\
+        username, password = parse_toml_conf(args.config, args.tsm)
 
     global tsm_command
     tsm_command = "proxychains4 -q dsmadmc -se={} -id={} -pa={}" \
-        .format(tsm_name, tsmUsername, tsmPassword)
-    libraries = get_libraries(tsm_name)
+        .format(args.tsm, tsmUsername, tsmPassword)
+    libraries = get_libraries(args.tsm)
 
-    if "ANS1017E" in libraries:
-        print("Session rejected: TCP/IP connection failure.")
-        sys.exit()
     # Get library from user's selection menu.
     selected_library = select_library_menu(libraries.split())
     print("Library Selected is", selected_library, end="")
 
     # Get library's device from TSM server.
-    device = get_device(selected_library).replace("\n", "")
+    device = get_device(selected_library)
     print(" and device is", device)
 
     # Create a dictonary with which volumes are in which slots,
