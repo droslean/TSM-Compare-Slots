@@ -42,43 +42,44 @@ optional arguments:
 ```
 
 # Example Output
+```
+Select Library :
+1 : LIBRARY1
+2 : LIBRARY2
+3 : LIBRARY3
+4 : Exit
+Enter Number: 1
+Library Selected is LIBRARY1 and device is /dev/smc0
 
-Select Library :<br />
-1 : LIBRARY1<br />
-2 : LIBRARY2<br />
-3 : LIBRARY3<br />
-4 : Exit<br />
-Enter Number: 1<br />
-Library Selected is LIBRARY1 and device is /dev/smc0<br />
- <br />                                                      
-|&emsp;&emsp;Slot Number&emsp;&emsp;|&emsp;&emsp;TSM Entry&emsp;&emsp;|&emsp;&emsp;Physical Entry&emsp;&emsp;|&emsp;&emsp;Result&emsp;&emsp;|<br />
-<br />
-|&emsp;&emsp;1027&emsp;&emsp;|&emsp;&emsp;VOL1LT4&emsp;&emsp;|&emsp;&emsp;VOL1LT4&emsp;&emsp;|&emsp;&emsp;OK&emsp;&emsp;&emsp;&emsp;|<br />
-|&emsp;&emsp;1028&emsp;&emsp;|&emsp;&emsp;VOL2LT4&emsp;&emsp;|&emsp;&emsp;VOL2LT4&emsp;&emsp;|&emsp;&emsp;OK&emsp;&emsp;&emsp;&emsp;|<br />
-|&emsp;&emsp;1029&emsp;&emsp;|&emsp;&emsp;VOL3LT4&emsp;&emsp;|&emsp;&emsp;VOL3LT4&emsp;&emsp;|&emsp;&emsp;OK&emsp;&emsp;&emsp;&emsp;|<br />
-|&emsp;&emsp;1030&emsp;&emsp;|&emsp;&emsp;VOL4LT4&emsp;&emsp;|&emsp;&emsp;VOL4LT4&emsp;&emsp;|&emsp;&emsp;OK&emsp;&emsp;&emsp;&emsp;|<br />
-|&emsp;&emsp;1031&emsp;&emsp;|&emsp;&emsp;VOL5LT4&emsp;&emsp;|&emsp;&emsp; EMPTY  &emsp;&emsp;|&emsp;&emsp;KO&emsp;&emsp;&emsp;&emsp;|<br />
-|&emsp;&emsp;1032&emsp;&emsp;|&emsp;&emsp;VOL6LT4&emsp;&emsp;|&emsp;&emsp; EMPTY  &emsp;&emsp;|&emsp;&emsp;KO&emsp;&emsp;&emsp;&emsp;|<br />
-|&emsp;&emsp;1033&emsp;&emsp;|&emsp;&emsp;VOL7LT4&emsp;&emsp;|&emsp;&emsp;VOL7LT4&emsp;&emsp;|&emsp;&emsp;OK&emsp;&emsp;&emsp;&emsp;|<br />
-|&emsp;&emsp;1034&emsp;&emsp;|&emsp;&emsp;VOL8LT4&emsp;&emsp;|&emsp;&emsp; EMPTY  &emsp;&emsp;|&emsp;&emsp;MOUNTED&emsp;&emsp;|<br />
-|&emsp;&emsp;1035&emsp;&emsp;|&emsp;&emsp;VOL9LT4&emsp;&emsp;|&emsp;&emsp;VOL9LT4&emsp;&emsp;|&emsp;&emsp;OK&emsp;&emsp;&emsp;&emsp;|<br />
 
+|  Slot Number  |  TSM Entry  |  Physical Entry  |  Result  |
+
+|  1027         |  VOL1LT4    |  VOL1LT4        |  OK      |
+|  1028         |  VOL2LT4    |  VOL2LT4        |  OK      |
+|  1029         |  VOL3LT4    |  VOL3LT4        |  OK      |
+|  1030         |  VOL4LT4    |  VOL4LT4        |  OK      |
+|  1031         |  VOL5LT4    |   EMPTY         |  KO      |
+|  1032          |  VOL6LT4     |   EMPTY         |  KO      |
+|  1033         |  VOL7LT4    |  VOL7LT4        |  OK      |
+|  1034         |  VOL8LT4    |   EMPTY         |  MOUNTED  |
+|  1035         |  VOL9LT4    |  VOL9LT4        |  OK      |
+```
 
 # Required Modules
+```
+sys
+subprocess
+toml
+argparse
 
-sys<br />
-subprocess<br />
-toml<br />
-argparse<br />
-
-Install toml module from pip with command: pip install toml<br />
-or<br />
-git clone https://github.com/toml-lang/toml.git<br />
-and, python setup.py install<br />
-
+Install toml module from pip with command: pip install toml
+or
+git clone https://github.com/toml-lang/toml.git
+and, python setup.py install
+```
 # Licence
-
- GNU GENERAL PUBLIC LICENSE<br />
- Version 3, 29 June 2007<br />
-
+```
+ GNU GENERAL PUBLIC LICENSE
+ Version 3, 29 June 2007
+```
 
