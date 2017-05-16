@@ -53,7 +53,7 @@ def get_libraries(tsm_name):
 # Get Library's Inventory
 def get_library_inventory(ip, username, password, device):
     try:
-        ssh_output = subprocess.check_output(["proxychains4 -q sshpass -p %s ssh -q %s@%s "
+        ssh_output = subprocess.check_output(["sshpass -p %s ssh -q %s@%s "
                                               "tapeutil -f %s inventory" %
                                               (password, username,
                                                ip, device)],
@@ -161,7 +161,6 @@ def get_info_from_toml(tomlFile):
 def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
                           mounted_volumes):
 
-    #title = "\n|\tSLOT\t|\tTSM ENTRY\t|\tPhysical Entry\t|\tResult\t|"
     title = ["SLOT", "TSM ENTRY", "Physical Entry", "Result"]
     list_to_print = list()
 
@@ -170,6 +169,7 @@ def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
 
     for x in range(int(mininum), int(maximum) + 1):
 
+        # Check for empty slots.
         if str(x) not in library_inventory_dict:
             libinv_vol = "Empty..."
         else:
@@ -180,6 +180,7 @@ def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
         else:
             tsmlib_vol = tsm_libvolumes_dict[str(x)]
 
+        # Check Generate results.
         if libinv_vol == tsmlib_vol:
             result = "\033[92mOK\033[97m"
             if args.outmode == "ALL":
@@ -194,6 +195,7 @@ def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
                 result = "\033[41mKO\033[49m"
                 list_to_print.append([x, tsmlib_vol, libinv_vol, result])
 
+    # Print the table
     print(tabulate(list_to_print, title, tablefmt="orgtbl"))
 
 
@@ -291,7 +293,7 @@ if __name__ == '__main__':
         username, password = parse_toml_conf(args.config, args.tsm)
 
     global tsm_command
-    tsm_command = "proxychains4 -q dsmadmc -se={} -id={} -pa={}" \
+    tsm_command = "dsmadmc -se={} -id={} -pa={}" \
         .format(args.tsm, tsmUsername, tsmPassword)
     libraries = get_libraries(args.tsm)
 

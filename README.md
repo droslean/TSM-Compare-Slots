@@ -71,11 +71,18 @@ sys
 subprocess
 toml
 argparse
+tabulate
 
 Install toml module from pip with command: pip install toml
 or
 git clone https://github.com/toml-lang/toml.git
 and, python setup.py install
+
+Install tabulate module from pip with command: pip install tabulate
+or
+Download source https://pypi.python.org/pypi/tabulate/#downloads
+and, python setup.py install
+
 ```
 # Licence
 ```
