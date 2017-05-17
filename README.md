@@ -51,18 +51,19 @@ Select Library :
 Enter Number: 1
 Library Selected is LIBRARY1 and device is /dev/smc0
 
+|   SLOT | TSM ENTRY   | Physical Entry   | Result   |
+|--------+-------------+------------------+----------|
+|   1030 | VOL01LT4    | VOL01LT4         | OK       |
+|   1031 | VOL02LT4    | Empty...         | MOUNTED  |
+|   1032 | VOL03LT4    | Empty...         | KO       |
+|   1033 | VOL04LT4    | VOL04LT4         | OK       |
+|   1034 | VOL05LT4    | VOL05LT4         | OK       |
+|   1035 | Empty...    | VOL06LT4         | KO       |
+|   1036 | VOL07LT4    | Empty...         | MOUNTED  |
+|   1037 | VOL08LT4    | VOL08LT4         | OK       |
+|   1038 | VOL09LT4    | VOL09LT4         | OK       |
+|   1039 | VOL06LT4    | Empty...         | KO       |
 
-|  Slot Number  |  TSM Entry  |  Physical Entry  |  Result  |
-
-|  1027         |  VOL1LT4    |  VOL1LT4        |  OK      |
-|  1028         |  VOL2LT4    |  VOL2LT4        |  OK      |
-|  1029         |  VOL3LT4    |  VOL3LT4        |  OK      |
-|  1030         |  VOL4LT4    |  VOL4LT4        |  OK      |
-|  1031         |  VOL5LT4    |   EMPTY         |  KO      |
-|  1032          |  VOL6LT4     |   EMPTY         |  KO      |
-|  1033         |  VOL7LT4    |  VOL7LT4        |  OK      |
-|  1034         |  VOL8LT4    |   EMPTY         |  MOUNTED  |
-|  1035         |  VOL9LT4    |  VOL9LT4        |  OK      |
 ```
 
 # Required Modules
