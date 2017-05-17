@@ -33,8 +33,6 @@ def select_library_menu(libraries):
 
 
 # Get Available libraries from given TSM server
-
-
 def get_libraries(tsm_name):
     try:
         libraries = subprocess.check_output(tsm_command +
@@ -178,7 +176,7 @@ def get_info_from_toml(tomlFile):
         return toml.loads(conffile.read())
 
 
-# Compares the slots of TSM and Physical libraries, and print the results.
+# Compares all slots of TSM and Physical libraries, and print the results.
 def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
                           mounted_volumes):
 
@@ -217,9 +215,11 @@ def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
                 list_to_print.append([x, tsmlib_vol, libinv_vol, result])
 
     # Print the table
-    print(tabulate(list_to_print, title, tablefmt="orgtbl"))
+    print(tabulate(list_to_print, title, tablefmt="grid"))
 
 
+# Compares single volume's slot of TSM and Physical libraries,
+# and print the results.
 def compare_tape_and_print(library_inventory_dict, tsm_libvolumes_dict,
                            mounted_volumes, volume_name):
     print("Compare Slots for", volume_name)
