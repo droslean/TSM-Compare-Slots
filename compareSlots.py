@@ -27,8 +27,14 @@ def select_library_menu(libraries):
         except ValueError:
             print("You didn't enter a number")
 
+        except KeyboardInterrupt:
+            print("\nCTRL+C detected. Program is exiting...\n")
+            sys.exit()
+
 
 # Get Available libraries from given TSM server
+
+
 def get_libraries(tsm_name):
     try:
         libraries = subprocess.check_output(tsm_command +
@@ -48,6 +54,9 @@ def get_libraries(tsm_name):
         print("TSM get libraries command failed with return code:",
               tsm_exec.returncode)
         sys.exit(tsm_exec.returncode)
+    except KeyboardInterrupt:
+        print("\nCTRL+C detected. Program is exiting...\n")
+        sys.exit()
 
 
 # Get Library's Inventory
@@ -81,6 +90,9 @@ def get_library_inventory(ip, username, password, device):
     except subprocess.CalledProcessError as ssh_exec:
         print("SSH command failed with return code:", ssh_exec.returncode)
         sys.exit(ssh_exec.returncode)
+    except KeyboardInterrupt:
+        print("\nCTRL+C detected. Program is exiting...\n")
+        sys.exit()
 
 
 # Get list of libvolumes with element number.
@@ -106,6 +118,9 @@ def get_libvolumes(library):
         print("TSM get libvolumes command failed with return code:",
               tsm_exec.returncode)
         sys.exit(tsm_exec.returncode)
+    except KeyboardInterrupt:
+        print("\nCTRL+C detected. Program is exiting...\n")
+        sys.exit()
 
 
 # Get device of the library.
@@ -126,6 +141,9 @@ def get_device(library):
         print("TSM get device command failed with return code:",
               tsm_exec.returncode)
         sys.exit(tsm_exec.returncode)
+    except KeyboardInterrupt:
+        print("\nCTRL+C detected. Program is exiting...\n")
+        sys.exit()
 
 
 # List of volumes that are currently mounted in TSM server.and
@@ -149,6 +167,9 @@ def get_mounted_volumes(library):
             print("TSM get mounted volumes command failed with return code:",
                   tsm_exec.returncode)
             sys.exit(tsm_exec.returncode)
+    except KeyboardInterrupt:
+        print("\nCTRL+C detected. Program is exiting...\n")
+        sys.exit()
 
 
 # Get dictonary from Toml file.
