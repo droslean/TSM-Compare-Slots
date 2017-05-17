@@ -81,7 +81,7 @@ and, python setup.py install
 
 Install tabulate module from pip with command: pip install tabulate
 or
-Download source https://pypi.python.org/pypi/tabulate/#downloads
+Download [source code](https://pypi.python.org/pypi/tabulate/#downloads)
 and, python setup.py install
 
 ```
