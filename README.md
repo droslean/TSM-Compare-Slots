@@ -80,11 +80,11 @@ git clone https://github.com/toml-lang/toml.git
 and, python setup.py install
 
 Install tabulate module from pip with command: pip install tabulate
-or
-Download [source code](https://pypi.python.org/pypi/tabulate/#downloads)
+or Download source code from https://pypi.python.org/pypi/tabulate/#downloads
 and, python setup.py install
-
 ```
+
+
 # Licence
 ```
  GNU GENERAL PUBLIC LICENSE
