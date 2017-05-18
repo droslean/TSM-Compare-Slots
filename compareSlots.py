@@ -215,7 +215,7 @@ def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
                 list_to_print.append([x, tsmlib_vol, libinv_vol, result])
 
     # Print the table
-    print(tabulate(list_to_print, title, tablefmt="grid"))
+    print(tabulate(list_to_print, title, tablefmt="fancy_grid"))
 
 
 # Compares single volume's slot of TSM and Physical libraries,
@@ -266,6 +266,7 @@ def compare_tape_and_print(library_inventory_dict, tsm_libvolumes_dict,
     print("Result:", result)
 
 
+# Parse the configuration file and return all the important information
 def parse_toml_conf(config_info, tsm_name):
     try:
         config_info = get_info_from_toml(args.config)
