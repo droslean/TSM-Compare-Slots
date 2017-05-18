@@ -31,7 +31,7 @@ password = "hostPass"
 
 # Arguments
 ```
-usage: compareSlots.py [-h] -t TSM [-o {ALL,KO}] [-v VOLUME] [-c CONFIG]
+usage: compareSlots.py [-h] -t TSM [-o {ALL,KO}] [-v VOLUME] [-c CONFIG] [-s]
 
 optional arguments:
   -h, --help                       show this help message and exit
@@ -39,6 +39,8 @@ optional arguments:
   -o {ALL,KO}, --outmode {ALL,KO}  Output mode. ALL to see all the comparison and KO to see only errors
   -v VOLUME, --volume VOLUME       Volume name. If you wish to compare slots for only one volume
   -c CONFIG, --config CONFIG       TOML configuration file.
+  -s, --sync                       Try to synchronize the KO slots
+
 ```
 
 # Example Output
@@ -63,6 +65,14 @@ Library Selected is LIBRARY1 and device is /dev/smc0
 |   1037 | VOL08LT4    | VOL08LT4         | OK       |
 |   1038 | VOL09LT4    | VOL09LT4         | OK       |
 |   1039 | VOL06LT4    | Empty...         | KO       |
+
+
+If the --sync argument is specified, the program will try to fix the KO tapes.
+In this case:
+
+Moving volume VOL06LT4 from 1035 to 1039
+Moving medium: source 1035, destination 1039...
+Exit with code: 0
 
 ```
 

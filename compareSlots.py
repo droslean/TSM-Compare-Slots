@@ -30,6 +30,9 @@ def select_library_menu(libraries):
         except KeyboardInterrupt as rc:
             print("\nCTRL+C detected. Program is exiting...\n")
             exit_program(rc)
+        except EOFError as rc:
+            print("\nCTRL+D detected. Program is exiting...\n")
+            exit_program(rc)
 
 
 # Get Available libraries from given TSM server
@@ -54,6 +57,9 @@ def get_libraries(tsm_name):
         exit_program(tsm_exec.returncode)
     except KeyboardInterrupt as rc:
         print("\nCTRL+C detected. Program is exiting...\n")
+        exit_program(rc)
+    except EOFError as rc:
+        print("\nCTRL+D detected. Program is exiting...\n")
         exit_program(rc)
 
 
@@ -91,6 +97,9 @@ def get_library_inventory(ip, username, password, device):
     except KeyboardInterrupt as rc:
         print("\nCTRL+C detected. Program is exiting...\n")
         exit_program(rc)
+    except EOFError as rc:
+        print("\nCTRL+D detected. Program is exiting...\n")
+        exit_program(rc)
 
 
 # Get list of libvolumes with element number.
@@ -119,6 +128,9 @@ def get_libvolumes(library):
     except KeyboardInterrupt as rc:
         print("\nCTRL+C detected. Program is exiting...\n")
         exit_program(rc)
+    except EOFError as rc:
+        print("\nCTRL+D detected. Program is exiting...\n")
+        exit_program(rc)
 
 
 # Get device of the library.
@@ -141,6 +153,9 @@ def get_device(library):
         exit_program(tsm_exec.returncode)
     except KeyboardInterrupt as rc:
         print("\nCTRL+C detected. Program is exiting...\n")
+        exit_program(rc)
+    except EOFError as rc:
+        print("\nCTRL+D detected. Program is exiting...\n")
         exit_program(rc)
 
 
@@ -168,6 +183,9 @@ def get_mounted_volumes(library):
     except KeyboardInterrupt as rc:
         print("\nCTRL+C detected. Program is exiting...\n")
         exit_program(rc)
+    except EOFError as rc:
+        print("\nCTRL+D detected. Program is exiting...\n")
+        exit_program(rc)
 
 
 # Compares all slots of TSM and Physical libraries, and print the results.
@@ -176,21 +194,17 @@ def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
 
     title = ["SLOT", "TSM ENTRY", "Physical Entry", "Result"]
     list_to_print = list()
+    KO_dict = dict()
     counter_OK = 0
     counter_KO = 0
     counter_MOUNTED = 0
 
     maximum = max(library_inventory_dict.keys(), key=int)
     mininum = min(library_inventory_dict.keys(), key=int)
-
     for x in range(int(mininum), int(maximum) + 1):
+        libinv_vol = library_inventory_dict[str(x)]
 
-        # Check for empty slots.
-        if str(x) not in library_inventory_dict:
-            libinv_vol = "Empty..."
-        else:
-            libinv_vol = library_inventory_dict[str(x)]
-
+        # Check for empty slots in TSM library.
         if str(x) not in tsm_libvolumes_dict:
             tsmlib_vol = "Empty..."
         else:
@@ -199,8 +213,8 @@ def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
         # Check Generate results.
         if libinv_vol == tsmlib_vol:
             result = "\033[92mOK\033[97m"
+            counter_OK += 1
             if output_mode == "ALL":
-                counter_OK += 1
                 list_to_print.append([x, tsmlib_vol, libinv_vol, result])
 
         else:
@@ -213,6 +227,12 @@ def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
                 counter_KO += 1
                 result = "\033[41mKO\033[49m"
                 list_to_print.append([x, tsmlib_vol, libinv_vol, result])
+                # Populate KO dictonary {VOLUME_NAME:[TSM_SLOT,PHYSICAL_SLOT]}
+                # in case in --sync argument, to fix them.
+                if tsmlib_vol != "Empty...":
+                    for slot, volume in library_inventory_dict.items():
+                        if volume == tsmlib_vol:
+                            KO_dict[tsmlib_vol] = [str(x), str(slot)]
 
     # Print the table
     print(tabulate(list_to_print, title, tablefmt="orgtbl"))
@@ -220,13 +240,14 @@ def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
     print("\n\nOK: {}\nMOUNTED: {}\nKO: {}\nTOTAL: {}\n".format(
         counter_OK, counter_MOUNTED, counter_KO,
          (counter_OK + counter_KO + counter_MOUNTED)))
+    return KO_dict
 
 
 # Compares single volume's slot of TSM and Physical libraries,
 # and print the results.
 def compare_tape_and_print(library_inventory_dict, tsm_libvolumes_dict,
                            mounted_volumes, volume_name):
-    print("Compare Slots for", volume_name)
+    print("\nCompare Slots for", volume_name)
     in_tsm = False
     in_physical = False
 
@@ -323,8 +344,59 @@ def parse_arguments():
                         default="tsmlist.toml",
                         help="TOML configuration file.")
 
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-s", "--sync", action="store_true",
+                       help="Try to synchronize the KO slots")
     args = parser.parse_args()
-    return args.tsm, args.outmode, args.volume, args.config
+    return args.tsm, args.outmode, args.volume, args.config, args.sync
+
+
+# Check if the specified tape can be moved to the slot
+# that TSM thinks the tape is.
+def can_move(slot, library_inventory_dict):
+    if library_inventory_dict[str(slot)] == "Empty...":
+        return True
+
+
+# Move the tape from slot to slot
+def move_tape(ip, username, password, device, from_slot, to_slot):
+    try:
+        return subprocess.check_output(["sshpass -p %s ssh -q %s@%s "
+                                        "tapeutil -f %s move %s %s " %
+                                        (password, username,
+                                         ip, device,
+                                         from_slot, to_slot)],
+                                       shell=True,
+                                       stderr=subprocess.PIPE).decode("utf-8")
+
+    except subprocess.CalledProcessError as ssh_exec:
+        print("SSH command failed with return code:", ssh_exec.returncode)
+        exit_program(ssh_exec.returncode)
+    except KeyboardInterrupt as rc:
+        print("\nCTRL+C detected. Program is exiting...\n")
+        exit_program(rc)
+    except EOFError as rc:
+        print("\nCTRL+D detected. Program is exiting...\n")
+        exit_program(rc)
+
+
+# Try to fix all the KO slots. This function will try to move
+# the tape to the slot that TSM server thinks that the tape exist.
+# For example:
+#   |   SLOT | TSM ENTRY   | Physical Entry   | Result   |
+#   |   1010 | VOL01L4     | Empty...         | KO       |
+#   |   1020 | Empty...    | VOL01L4          | KO       |
+#
+#   In this case the tape will be moved from 1020 to 1010
+#   The function can_move() will check if the 1010 is empty
+#   in the physical library.
+def fix_tapes(ip, username, password, device, KO_dict, library_inventory_dict):
+    for volume, slot_list in KO_dict.items():
+        if can_move(str(slot_list[0]), library_inventory_dict):
+            print("Moving volume {} from {} to {}".format(
+                  volume, str(slot_list[1]), str(slot_list[0])))
+            print(move_tape(ip, username, password, device,
+                            str(slot_list[1]), str(slot_list[0])))
 
 
 # Main Part
@@ -334,7 +406,7 @@ if __name__ == '__main__':
 
     # Parse Arguments
     tsm_name, output_mode, \
-        volume_name, config_file = parse_arguments()
+        volume_name, config_file, sync = parse_arguments()
 
     # Define important information from the configuration file
     tsmUsername, tsmPassword, tsmIp,\
@@ -351,7 +423,7 @@ if __name__ == '__main__':
 
     # Get library's device from TSM server.
     device = get_device(selected_library)
-    print(" and device is", device)
+    print(" and device is", device, "\n")
 
     # Create a dictonary with which volumes are in which slots,
     # in Physical library
@@ -370,9 +442,16 @@ if __name__ == '__main__':
         compare_tape_and_print(library_inventory_dict, tsm_libvolumes_dict,
                                mounted_volumes, volume_name)
     else:
+        KO_dict = dict()
         # Finally compare everything and print output.
-        compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
-                              mounted_volumes, output_mode)
+        KO_dict = compare_all_and_print(library_inventory_dict,
+                                        tsm_libvolumes_dict,
+                                        mounted_volumes, output_mode)
+
+        if sync and KO_dict:
+            print("Trying to synchronize KO slots.")
+            fix_tapes(tsmIp, username, password,
+                      device, KO_dict, library_inventory_dict)
 
     # Clear colors.
     print("\033[0m")
