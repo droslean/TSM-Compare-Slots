@@ -370,8 +370,7 @@ def move_tape(ip, username, password, device, from_slot, to_slot):
                                        stderr=subprocess.PIPE).decode("utf-8")
 
     except subprocess.CalledProcessError as ssh_exec:
-        print("SSH command failed with return code:", ssh_exec.returncode)
-        exit_program(ssh_exec.returncode)
+        print("Move tape command failed with return code:", ssh_exec.returncode)
     except KeyboardInterrupt as rc:
         print("\nCTRL+C detected. Program is exiting...\n")
         exit_program(rc)
