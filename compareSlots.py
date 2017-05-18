@@ -27,9 +27,9 @@ def select_library_menu(libraries):
         except ValueError:
             print("You didn't enter a number")
 
-        except KeyboardInterrupt:
+        except KeyboardInterrupt as rc:
             print("\nCTRL+C detected. Program is exiting...\n")
-            sys.exit()
+            exit_program(rc)
 
 
 # Get Available libraries from given TSM server
@@ -51,10 +51,10 @@ def get_libraries(tsm_name):
     except subprocess.CalledProcessError as tsm_exec:
         print("TSM get libraries command failed with return code:",
               tsm_exec.returncode)
-        sys.exit(tsm_exec.returncode)
-    except KeyboardInterrupt:
+        exit_program(tsm_exec.returncode)
+    except KeyboardInterrupt as rc:
         print("\nCTRL+C detected. Program is exiting...\n")
-        sys.exit()
+        exit_program(rc)
 
 
 # Get Library's Inventory
@@ -87,10 +87,10 @@ def get_library_inventory(ip, username, password, device):
 
     except subprocess.CalledProcessError as ssh_exec:
         print("SSH command failed with return code:", ssh_exec.returncode)
-        sys.exit(ssh_exec.returncode)
-    except KeyboardInterrupt:
+        exit_program(ssh_exec.returncode)
+    except KeyboardInterrupt as rc:
         print("\nCTRL+C detected. Program is exiting...\n")
-        sys.exit()
+        exit_program(rc)
 
 
 # Get list of libvolumes with element number.
@@ -115,10 +115,10 @@ def get_libvolumes(library):
     except subprocess.CalledProcessError as tsm_exec:
         print("TSM get libvolumes command failed with return code:",
               tsm_exec.returncode)
-        sys.exit(tsm_exec.returncode)
-    except KeyboardInterrupt:
+        exit_program(tsm_exec.returncode)
+    except KeyboardInterrupt as rc:
         print("\nCTRL+C detected. Program is exiting...\n")
-        sys.exit()
+        exit_program(rc)
 
 
 # Get device of the library.
@@ -138,10 +138,10 @@ def get_device(library):
     except subprocess.CalledProcessError as tsm_exec:
         print("TSM get device command failed with return code:",
               tsm_exec.returncode)
-        sys.exit(tsm_exec.returncode)
-    except KeyboardInterrupt:
+        exit_program(tsm_exec.returncode)
+    except KeyboardInterrupt as rc:
         print("\nCTRL+C detected. Program is exiting...\n")
-        sys.exit()
+        exit_program(rc)
 
 
 # List of volumes that are currently mounted in TSM server.and
@@ -164,24 +164,21 @@ def get_mounted_volumes(library):
         else:
             print("TSM get mounted volumes command failed with return code:",
                   tsm_exec.returncode)
-            sys.exit(tsm_exec.returncode)
-    except KeyboardInterrupt:
+            exit_program(tsm_exec.returncode)
+    except KeyboardInterrupt as rc:
         print("\nCTRL+C detected. Program is exiting...\n")
-        sys.exit()
-
-
-# Get dictonary from Toml file.
-def get_info_from_toml(tomlFile):
-    with open(tomlFile) as conffile:
-        return toml.loads(conffile.read())
+        exit_program(rc)
 
 
 # Compares all slots of TSM and Physical libraries, and print the results.
 def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
-                          mounted_volumes):
+                          mounted_volumes, output_mode):
 
     title = ["SLOT", "TSM ENTRY", "Physical Entry", "Result"]
     list_to_print = list()
+    counter_OK = 0
+    counter_KO = 0
+    counter_MOUNTED = 0
 
     maximum = max(library_inventory_dict.keys(), key=int)
     mininum = min(library_inventory_dict.keys(), key=int)
@@ -202,20 +199,27 @@ def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
         # Check Generate results.
         if libinv_vol == tsmlib_vol:
             result = "\033[92mOK\033[97m"
-            if args.outmode == "ALL":
+            if output_mode == "ALL":
+                counter_OK += 1
                 list_to_print.append([x, tsmlib_vol, libinv_vol, result])
 
         else:
             if mounted_volumes and tsmlib_vol in mounted_volumes:
+                counter_MOUNTED += 1
                 result = "\033[44mMOUNTED\033[49m"
-                if args.outmode == "ALL":
+                if output_mode == "ALL":
                     list_to_print.append([x, tsmlib_vol, libinv_vol, result])
             else:
+                counter_KO += 1
                 result = "\033[41mKO\033[49m"
                 list_to_print.append([x, tsmlib_vol, libinv_vol, result])
 
     # Print the table
-    print(tabulate(list_to_print, title, tablefmt="fancy_grid"))
+    print(tabulate(list_to_print, title, tablefmt="orgtbl"))
+
+    print("\n\nOK: {}\nMOUNTED: {}\nKO: {}\nTOTAL: {}\n".format(
+        counter_OK, counter_MOUNTED, counter_KO,
+         (counter_OK + counter_KO + counter_MOUNTED)))
 
 
 # Compares single volume's slot of TSM and Physical libraries,
@@ -225,6 +229,7 @@ def compare_tape_and_print(library_inventory_dict, tsm_libvolumes_dict,
     print("Compare Slots for", volume_name)
     in_tsm = False
     in_physical = False
+
     try:
         tsm_slot = list(tsm_libvolumes_dict.keys())[list(
             tsm_libvolumes_dict.values()).index(volume_name)]
@@ -266,13 +271,19 @@ def compare_tape_and_print(library_inventory_dict, tsm_libvolumes_dict,
     print("Result:", result)
 
 
-# Parse the configuration file and return all the important information
-def parse_toml_conf(config_info, tsm_name):
+# Get dictonary from Toml file.
+def get_info_from_toml(tomlFile):
     try:
-        config_info = get_info_from_toml(args.config)
-    except FileNotFoundError as error:
-        print("File not found.\n", error)
-        sys.exit()
+        with open(tomlFile) as conffile:
+            return toml.loads(conffile.read())
+    except OSError as error:
+        print("Couldn't open configuration file!")
+        exit_program(error)
+
+
+# Parse the configuration file and return all the important information
+def parse_toml_conf(config_file, tsm_name):
+    config_info = get_info_from_toml(config_file)
 
     # Check if TSM exists in the configuration file.
     if tsm_name not in config_info['TSM_SERVERS']:
@@ -288,11 +299,15 @@ def parse_toml_conf(config_info, tsm_name):
         tsmDetails['username'], \
         tsmDetails['password']
 
-    # Main Part
-if __name__ == '__main__':
-    # Set white color
-    print("\033[97m")
 
+# Clear colors and exit program with the given RC code.
+def exit_program(rc):
+    print("\033[0m")
+    sys.exit(rc)
+
+
+# Parse arguments given from the user and return them with variables
+def parse_arguments():
     # Manage arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--tsm", required=True, help="TSM server name.")
@@ -309,15 +324,26 @@ if __name__ == '__main__':
                         help="TOML configuration file.")
 
     args = parser.parse_args()
+    return args.tsm, args.outmode, args.volume, args.config
+
+
+# Main Part
+if __name__ == '__main__':
+    # Set white color
+    print("\033[97m")
+
+    # Parse Arguments
+    tsm_name, output_mode, \
+        volume_name, config_file = parse_arguments()
 
     # Define important information from the configuration file
     tsmUsername, tsmPassword, tsmIp,\
-        username, password = parse_toml_conf(args.config, args.tsm)
+        username, password = parse_toml_conf(config_file, tsm_name)
 
     global tsm_command
     tsm_command = "dsmadmc -se={} -id={} -pa={}" \
-        .format(args.tsm, tsmUsername, tsmPassword)
-    libraries = get_libraries(args.tsm)
+        .format(tsm_name, tsmUsername, tsmPassword)
+    libraries = get_libraries(tsm_name)
 
     # Get library from user's selection menu.
     selected_library = select_library_menu(libraries.split())
@@ -340,13 +366,13 @@ if __name__ == '__main__':
     # will be empty, since the volume is mounted on a disk slot.
     mounted_volumes = get_mounted_volumes(selected_library)
 
-    if args.volume:
+    if volume_name:
         compare_tape_and_print(library_inventory_dict, tsm_libvolumes_dict,
-                               mounted_volumes, args.volume)
+                               mounted_volumes, volume_name)
     else:
         # Finally compare everything and print output.
-        compare_all_and_print(library_inventory_dict,
-                              tsm_libvolumes_dict, mounted_volumes)
+        compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
+                              mounted_volumes, output_mode)
 
     # Clear colors.
     print("\033[0m")
