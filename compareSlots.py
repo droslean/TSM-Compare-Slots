@@ -63,7 +63,7 @@ def get_libraries(tsm_name):
         exit_program(rc)
 
 
-# Get Library's Inventory
+# Get Physical Library's Inventory
 def get_library_inventory(ip, username, password, device):
     try:
         ssh_output = subprocess.check_output(["sshpass -p %s ssh -q %s@%s "
@@ -102,7 +102,7 @@ def get_library_inventory(ip, username, password, device):
         exit_program(rc)
 
 
-# Get list of libvolumes with element number.
+# Get list of TSM libvolumes with element number.
 def get_libvolumes(library):
     try:
         tsm_output = subprocess.check_output(tsm_command +
@@ -165,13 +165,13 @@ def get_device(library):
 def get_mounted_volumes(library):
     try:
         return subprocess.check_output(tsm_command +
-                                       " -dataonly=yes " +
+                                       " -dataonly=yes -tab " +
                                        "select volume_name from drives " +
                                        "where DRIVE_STATE=\\'LOADED\\' " +
                                        "and LIBRARY_NAME=\\'" +
                                        library + "\\'",
                                        shell=True,
-                                       ).decode("utf-8")
+                                       ).decode("utf-8").splitlines()
 
     except subprocess.CalledProcessError as tsm_exec:
         if tsm_exec.returncode == 11:
@@ -192,9 +192,16 @@ def get_mounted_volumes(library):
 def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
                           mounted_volumes, output_mode):
 
-    title = ["SLOT", "TSM ENTRY", "Physical Entry", "Result"]
+    # Titles of the tables
+    title = ["SLOT", "TSM ENTRY", "PHYSICAL ENTRY", "RESULT"]
+    results_title = ["OK", "MOUNTED", "KO", "TOTAL"]
+
+    # Lists to print
+    results = list()
     list_to_print = list()
     KO_dict = dict()
+
+    # Counters
     counter_OK = 0
     counter_KO = 0
     counter_MOUNTED = 0
@@ -205,12 +212,9 @@ def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
         libinv_vol = library_inventory_dict[str(x)]
 
         # Check for empty slots in TSM library.
-        if str(x) not in tsm_libvolumes_dict:
-            tsmlib_vol = "Empty..."
-        else:
-            tsmlib_vol = tsm_libvolumes_dict[str(x)]
+        tsmlib_vol = tsm_libvolumes_dict.get(str(x), "Empty...")
 
-        # Check Generate results.
+        # Compare and Generate results.
         if libinv_vol == tsmlib_vol:
             result = "\033[92mOK\033[97m"
             counter_OK += 1
@@ -227,6 +231,7 @@ def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
                 counter_KO += 1
                 result = "\033[41mKO\033[49m"
                 list_to_print.append([x, tsmlib_vol, libinv_vol, result])
+
                 # Populate KO dictonary {VOLUME_NAME:[TSM_SLOT,PHYSICAL_SLOT]}
                 # in case in --sync argument, to fix them.
                 if tsmlib_vol != "Empty...":
@@ -237,9 +242,12 @@ def compare_all_and_print(library_inventory_dict, tsm_libvolumes_dict,
     # Print the table
     print(tabulate(list_to_print, title, tablefmt="orgtbl"))
 
-    print("\n\nOK: {}\nMOUNTED: {}\nKO: {}\nTOTAL: {}\n".format(
-        counter_OK, counter_MOUNTED, counter_KO,
-         (counter_OK + counter_KO + counter_MOUNTED)))
+    results.append([str(counter_OK), str(counter_MOUNTED), str(counter_KO),
+                    str((counter_OK + counter_KO + counter_MOUNTED))])
+
+    # Print results
+    print("\n" + tabulate(results, results_title, tablefmt="orgtbl"))
+
     return KO_dict
 
 
@@ -370,7 +378,8 @@ def move_tape(ip, username, password, device, from_slot, to_slot):
                                        stderr=subprocess.PIPE).decode("utf-8")
 
     except subprocess.CalledProcessError as ssh_exec:
-        print("Move tape command failed with return code:", ssh_exec.returncode)
+        print("Move tape command failed with return code:",
+              ssh_exec.returncode)
     except KeyboardInterrupt as rc:
         print("\nCTRL+C detected. Program is exiting...\n")
         exit_program(rc)
