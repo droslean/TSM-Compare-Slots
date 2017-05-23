@@ -27,11 +27,10 @@ def select_library_menu(libraries):
             exit_program(rc)
 
         finally:
-            if (user_input > len(libraries) or user_input == 0):
-                if (user_input == len(libraries) + 1):
-                    sys.exit()
-                else:
-                    print("Try again...")
+            if (user_input == len(libraries) + 1):
+                sys.exit()
+            elif (user_input > len(libraries) or user_input == 0):
+                print("Try again...")
             else:
                 return libraries[user_input - 1]
                 break
