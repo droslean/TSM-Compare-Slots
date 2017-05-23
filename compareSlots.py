@@ -8,14 +8,25 @@ from tabulate import tabulate
 # Select library Menu
 def select_library_menu(libraries):
     while True:
-        counter = 1
-        for library in libraries:
-            if library:
-                print("%s: %s " % (counter, library))
-                counter += 1
+        for counter, library in enumerate(libraries):
+            print("%s: %s " % (counter + 1, library))
+
         print("{}: Exit ".format(len(libraries) + 1))
+
         try:
             user_input = int(input("Enter number: "))
+        except ValueError:
+            print("You didn't enter a number")
+
+        except KeyboardInterrupt as rc:
+            print("\nCTRL+C detected. Program is exiting...\n")
+            exit_program(rc)
+
+        except EOFError as rc:
+            print("\nCTRL+D detected. Program is exiting...\n")
+            exit_program(rc)
+
+        finally:
             if (user_input > len(libraries) or user_input == 0):
                 if (user_input == len(libraries) + 1):
                     sys.exit()
@@ -24,15 +35,6 @@ def select_library_menu(libraries):
             else:
                 return libraries[user_input - 1]
                 break
-        except ValueError:
-            print("You didn't enter a number")
-
-        except KeyboardInterrupt as rc:
-            print("\nCTRL+C detected. Program is exiting...\n")
-            exit_program(rc)
-        except EOFError as rc:
-            print("\nCTRL+D detected. Program is exiting...\n")
-            exit_program(rc)
 
 
 # Get Available libraries from given TSM server
@@ -49,8 +51,6 @@ def get_libraries(tsm_name):
             print("Session rejected: TCP/IP connection failure.")
             sys.exit()
 
-        return libraries
-
     except subprocess.CalledProcessError as tsm_exec:
         print("TSM get libraries command failed with return code:",
               tsm_exec.returncode)
@@ -61,6 +61,8 @@ def get_libraries(tsm_name):
     except EOFError as rc:
         print("\nCTRL+D detected. Program is exiting...\n")
         exit_program(rc)
+    finally:
+        return libraries
 
 
 # Get Physical Library's Inventory
@@ -89,8 +91,6 @@ def get_library_inventory(ip, username, password, device):
             if slot:
                 slot_dict[slot] = volume
 
-        return slot_dict
-
     except subprocess.CalledProcessError as ssh_exec:
         print("SSH command failed with return code:", ssh_exec.returncode)
         exit_program(ssh_exec.returncode)
@@ -100,6 +100,8 @@ def get_library_inventory(ip, username, password, device):
     except EOFError as rc:
         print("\nCTRL+D detected. Program is exiting...\n")
         exit_program(rc)
+    finally:
+        return slot_dict
 
 
 # Get list of TSM libvolumes with element number.
@@ -120,7 +122,6 @@ def get_libvolumes(library):
                 libvolumes_dict[volume_element.split(
                     '\t')[1]] = volume_element.split('\t')[0]
 
-        return libvolumes_dict
     except subprocess.CalledProcessError as tsm_exec:
         print("TSM get libvolumes command failed with return code:",
               tsm_exec.returncode)
@@ -131,6 +132,8 @@ def get_libvolumes(library):
     except EOFError as rc:
         print("\nCTRL+D detected. Program is exiting...\n")
         exit_program(rc)
+    finally:
+        return libvolumes_dict
 
 
 # Get device of the library.
