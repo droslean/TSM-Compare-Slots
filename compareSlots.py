@@ -15,18 +15,6 @@ def select_library_menu(libraries):
 
         try:
             user_input = int(input("Enter number: "))
-        except ValueError:
-            print("You didn't enter a number")
-
-        except KeyboardInterrupt as rc:
-            print("\nCTRL+C detected. Program is exiting...\n")
-            exit_program(rc)
-
-        except EOFError as rc:
-            print("\nCTRL+D detected. Program is exiting...\n")
-            exit_program(rc)
-
-        finally:
             if (user_input == len(libraries) + 1):
                 sys.exit()
             elif (user_input > len(libraries) or user_input == 0):
@@ -34,6 +22,12 @@ def select_library_menu(libraries):
             else:
                 return libraries[user_input - 1]
                 break
+        except ValueError:
+            print("You didn't enter a number")
+
+        except (KeyboardInterrupt, EOFError) as rc:
+            print("\nProgram is exiting...\n")
+            exit_program(rc)
 
 
 # Get Available libraries from given TSM server
@@ -49,19 +43,14 @@ def get_libraries(tsm_name):
         if "ANS1017E" in libraries:
             print("Session rejected: TCP/IP connection failure.")
             sys.exit()
-
+        return libraries
     except subprocess.CalledProcessError as tsm_exec:
         print("TSM get libraries command failed with return code:",
               tsm_exec.returncode)
         exit_program(tsm_exec.returncode)
-    except KeyboardInterrupt as rc:
-        print("\nCTRL+C detected. Program is exiting...\n")
+    except (KeyboardInterrupt, EOFError) as rc:
+        print("\nProgram is exiting...\n")
         exit_program(rc)
-    except EOFError as rc:
-        print("\nCTRL+D detected. Program is exiting...\n")
-        exit_program(rc)
-    finally:
-        return libraries
 
 
 # Get Physical Library's Inventory
@@ -89,18 +78,14 @@ def get_library_inventory(ip, username, password, device):
             # Populate dictionary
             if slot:
                 slot_dict[slot] = volume
+        return slot_dict
 
     except subprocess.CalledProcessError as ssh_exec:
         print("SSH command failed with return code:", ssh_exec.returncode)
         exit_program(ssh_exec.returncode)
-    except KeyboardInterrupt as rc:
-        print("\nCTRL+C detected. Program is exiting...\n")
+    except (KeyboardInterrupt, EOFError) as rc:
+        print("\nProgram is exiting...\n")
         exit_program(rc)
-    except EOFError as rc:
-        print("\nCTRL+D detected. Program is exiting...\n")
-        exit_program(rc)
-    finally:
-        return slot_dict
 
 
 # Get list of TSM libvolumes with element number.
@@ -121,18 +106,15 @@ def get_libvolumes(library):
                 libvolumes_dict[volume_element.split(
                     '\t')[1]] = volume_element.split('\t')[0]
 
+        return libvolumes_dict
+
     except subprocess.CalledProcessError as tsm_exec:
         print("TSM get libvolumes command failed with return code:",
               tsm_exec.returncode)
         exit_program(tsm_exec.returncode)
-    except KeyboardInterrupt as rc:
-        print("\nCTRL+C detected. Program is exiting...\n")
+    except (KeyboardInterrupt, EOFError) as rc:
+        print("\nProgram is exiting...\n")
         exit_program(rc)
-    except EOFError as rc:
-        print("\nCTRL+D detected. Program is exiting...\n")
-        exit_program(rc)
-    finally:
-        return libvolumes_dict
 
 
 # Get device of the library.
@@ -153,11 +135,8 @@ def get_device(library):
         print("TSM get device command failed with return code:",
               tsm_exec.returncode)
         exit_program(tsm_exec.returncode)
-    except KeyboardInterrupt as rc:
-        print("\nCTRL+C detected. Program is exiting...\n")
-        exit_program(rc)
-    except EOFError as rc:
-        print("\nCTRL+D detected. Program is exiting...\n")
+    except (KeyboardInterrupt, EOFError) as rc:
+        print("\nProgram is exiting...\n")
         exit_program(rc)
 
 
@@ -182,11 +161,8 @@ def get_mounted_volumes(library):
             print("TSM get mounted volumes command failed with return code:",
                   tsm_exec.returncode)
             exit_program(tsm_exec.returncode)
-    except KeyboardInterrupt as rc:
-        print("\nCTRL+C detected. Program is exiting...\n")
-        exit_program(rc)
-    except EOFError as rc:
-        print("\nCTRL+D detected. Program is exiting...\n")
+    except (KeyboardInterrupt, EOFError) as rc:
+        print("\nProgram is exiting...\n")
         exit_program(rc)
 
 
@@ -261,6 +237,7 @@ def compare_tape_and_print(library_inventory_dict, tsm_libvolumes_dict,
     in_tsm = False
     in_physical = False
 
+    # Check if tape exists in the TSM library.
     try:
         tsm_slot = list(tsm_libvolumes_dict.keys())[list(
             tsm_libvolumes_dict.values()).index(volume_name)]
@@ -270,6 +247,7 @@ def compare_tape_and_print(library_inventory_dict, tsm_libvolumes_dict,
     except ValueError:
         print("Volume not found in TSM library")
 
+    # Check if tape exist in the Physical library.
     try:
         physical_slot = list(library_inventory_dict.keys())[list(
             library_inventory_dict.values())
@@ -280,17 +258,13 @@ def compare_tape_and_print(library_inventory_dict, tsm_libvolumes_dict,
     except ValueError:
         print("Volume not found in Physical library")
 
-    if not in_tsm:
-        tsm_slot = "Not found!"
-
-    if not in_physical:
-        physical_slot = "Not found!"
-
+    # Exit if volume couldn't be found.
     if not in_tsm and not in_physical:
-        print("Volume {} couldn't be found in TSM and Physical Library."
+        print("Volume {} couldn't be found in both TSM and Physical Library."
               .format(volume_name))
         sys.exit()
 
+    # Define results.
     if tsm_slot == physical_slot:
         result = "\033[92mOK\033[97m"
     else:
@@ -322,6 +296,7 @@ def parse_toml_conf(config_file, tsm_name):
         sys.exit()
 
     tsmDetails = config_info['TSM_SERVERS'][tsm_name]
+
     # Return all information needed to connect
     # to TSM server and the host server.
     return tsmDetails['tsmUser'], \
@@ -382,11 +357,8 @@ def move_tape(ip, username, password, device, from_slot, to_slot):
     except subprocess.CalledProcessError as ssh_exec:
         print("Move tape command failed with return code:",
               ssh_exec.returncode)
-    except KeyboardInterrupt as rc:
-        print("\nCTRL+C detected. Program is exiting...\n")
-        exit_program(rc)
-    except EOFError as rc:
-        print("\nCTRL+D detected. Program is exiting...\n")
+    except (KeyboardInterrupt, EOFError) as rc:
+        print("\nProgram is exiting...\n")
         exit_program(rc)
 
 
@@ -427,13 +399,12 @@ if __name__ == '__main__':
         .format(tsm_name, tsmUsername, tsmPassword)
     libraries = get_libraries(tsm_name)
 
-    # Get library from user's selection menu.
+    # Get library from user's selection menu and its device
+    # from the TSM server.
     selected_library = select_library_menu(libraries.split())
-    print("Library Selected is", selected_library, end="")
-
-    # Get library's device from TSM server.
     device = get_device(selected_library)
-    print(" and device is", device, "\n")
+    print("Library Selected is {} and device is {}"
+          .format(selected_library, device))
 
     # Create a dictonary with which volumes are in which slots,
     # in Physical library
@@ -459,7 +430,7 @@ if __name__ == '__main__':
                                         mounted_volumes, output_mode)
 
         if sync and KO_dict:
-            print("Trying to synchronize KO slots.")
+            print("\nTrying to synchronize KO slots.\n")
             fix_tapes(tsmIp, username, password,
                       device, KO_dict, library_inventory_dict)
 
