@@ -1,4 +1,4 @@
-# Compare Slot Script
+# Compare the slots between TSM server and Physical Tape libraries.
 
 The purpose of this python program is to compare the slots of a TSM server 
 with the slots of the Physical library.
